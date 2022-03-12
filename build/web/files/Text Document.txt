@@ -1,0 +1,54 @@
+Connection con = null;
+
+        ResultSet rs = null;
+
+        PreparedStatement psmt = null;
+
+        FileInputStream fis;
+
+        String url = "jdbc:mysql://localhost:3306/test";
+        Blob blob;
+
+        try {
+
+            Class.forName("com.mysql.cj.jdbc.Driver");
+
+            con = DriverManager.getConnection(url, "root", "almamun@123");
+
+            psmt = con.prepareStatement("select * from photo");
+
+            rs = psmt.executeQuery();
+
+            while (rs.next()) {
+                int id = rs.getInt("id");
+                String name = rs.getString("name");
+                blob = rs.getBlob("image");
+                
+                InputStream in = blob.getBinaryStream();
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                byte[] buffer = new byte[in.available()];
+                int i;
+                 
+                while ((i = in.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, i);                  
+                }
+                
+                
+                byte[] imageBytes = outputStream.toByteArray();
+                String base64Image = Base64.getEncoder().encodeToString(imageBytes);
+                 
+                 
+                in.close();
+                outputStream.close();
+                %>
+                
+                <img src="data:image/png;base64,<%= base64Image %>">
+                <span> <%= id %> </span>
+                <span> <%= name %> </span>
+                
+                <%
+                    
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
